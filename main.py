@@ -21,6 +21,8 @@ DELIMITER_COUNT = 140
 HOURS_BACK = 24
 if BCC_LIST:
     BCC_LIST = BCC_LIST.split(';')
+if isinstance(BCC_LIST, str):
+    BCC_LIST = []
 if not CUTOFF_SCORE:
     CUTOFF_SCORE = 9.0
 
@@ -72,8 +74,9 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
                     )
                 ):
                 tmp_list = []
+                cve_num = cve_dict.get('id', '')
                 tmp_list.append(
-                    f"CVE: {cve_dict.get('id', '')}")
+                    f'CVE: <a href="https://nvd.nist.gov/vuln/detail/{cve_num}">{cve_num}</a>')
                 tmp_list.append(
                     f"CVE Max Base Score: {cvss_max_base_score}")
                 tmp_list.append(
@@ -85,7 +88,7 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
                 desc_str = '\n    '.join([d.get('value') for d in cve_dict.get(
                     'descriptions') if d and d.get('lang') == "en"])
                 tmp_list.append(
-                    f"Description: \n    {desc_str}")
+                    f"Description: \n    {escape(desc_str)}")
                 tmp_list.append("\nImpact:")
                 for cvss_version, cvss_values_list in metrics.items():
                     tmp_list.append(f"    {cvss_version}:")
@@ -102,8 +105,20 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
                                     f"        {cvss_key}: {cvss_value}")
                             if cvss_key == "cvssData":
                                 for cvss_data_key, cvss_data_value in cvss_value.items():
-                                    tmp_list.append(
-                                        f"        {cvss_data_key}: {cvss_data_value}")
+                                    if cvss_data_key in [
+                                        "baseSeverity",
+                                        "attackVector",
+                                        "attackComplexity",
+                                        "privilegesRequired",
+                                        "userInteraction",
+                                        "confidentialityImpact",
+                                        "integrityImpact",
+                                        "availabilityImpact",
+                                        "exploitabilityScore",
+                                        "impactScore",
+                                    ]:
+                                        tmp_list.append(
+                                            f"        {cvss_data_key}: {cvss_data_value}")
                 ref_str = '\n    '.join([d.get('url')
                                         for d in cve_dict.get('references')])
                 tmp_list.append(
@@ -120,7 +135,7 @@ def get_nist_data(startIndex=0, limit=2000, results=[]) -> list:
     headers = {
         "apiKey": NIST_KEY
     }
-    utcnow = datetime.datetime.utcnow()
+    utcnow = datetime.datetime.now(datetime.UTC)
     utctimeago = utcnow - datetime.timedelta(hours=HOURS_BACK)
     params = {
         "lastModStartDate": utctimeago.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3],
@@ -128,7 +143,7 @@ def get_nist_data(startIndex=0, limit=2000, results=[]) -> list:
         "resultsPerPage": limit,
         "startIndex": startIndex
     }
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params, timeout=300)
     if response.ok:
         nist_data = response.json()
         nist_vuln_data = nist_data.get('vulnerabilities')
@@ -158,10 +173,13 @@ def output_cvss_results(html_linebreaks=False, cvss_base_minimum=9.0) -> str:
     final_result = f"{ '=' * DELIMITER_COUNT }\nCurrent Cutoff CVSS Score: {cvss_base_minimum}\n{ '=' * DELIMITER_COUNT }\n{results_list}"
     final_result = re.sub(r'(\n){3,}', '\n\n', final_result)
     if html_linebreaks:
-        final_result = escape(final_result)
         final_result = final_result.replace(
             "\n", "<br>").replace(
             " ", "&nbsp;")
+        final_result = final_result.replace(
+            'a&nbsp;href="https://nvd.nist.gov/vuln/detail/',
+            'a href="https://nvd.nist.gov/vuln/detail/'
+        )
     return final_result
 
 
@@ -174,13 +192,13 @@ def lambda_handler(event, context) -> None:
     email_body = output_cvss_results(
         html_linebreaks=True,
         cvss_base_minimum=CUTOFF_SCORE)
-    email_subject = f"CVE Report: {datetime.datetime.now().isoformat()}"
+    email_subject = f"Curse Catcher Report: {datetime.datetime.now().strftime('%Y-%m-%d')}"
     mail_obj.send_mail(
         email_subject,
         email_body,
         MAIL_USERNAME,
         [
-            MAIL_USERNAME
+            MAIL_USERNAME,
         ],
         [],
         BCC_LIST,
