@@ -31,10 +31,10 @@ COPY . /app/
 RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
 
 # Add cron job
-RUN echo "0 8 * * * root /app/cron_run.sh > /var/log/cron.log 2>&1" > /etc/cron.d/cvealerts
+RUN echo "0 8 * * * root /app/cron_run.sh > /var/log/cron.log 2>&1" > /etc/cron.d/cursecatcher
 
 # Set permissions and apply cron job
-RUN chmod 0644 /etc/cron.d/cvealerts && crontab /etc/cron.d/cvealerts
+RUN chmod 0644 /etc/cron.d/cursecatcher && crontab /etc/cron.d/cursecatcher
 
 # Copy the entrypoint script and ensure it's executable
 COPY entrypoint.sh /app/entrypoint.sh
