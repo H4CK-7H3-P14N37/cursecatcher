@@ -1,9 +1,9 @@
 asgiref==3.8.1
 certifi==2025.1.31
 charset-normalizer==3.4.1
-Django==5.1.6
+Django==5.2
 idna==3.10
-pycodestyle==2.12.1
+pycodestyle==2.13.0
 requests==2.32.3
 sqlparse==0.5.3
 tomli==2.2.1
