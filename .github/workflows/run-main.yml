@@ -8,6 +8,8 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    env:
+      BCC_LIST: ${{ vars.BCC_LIST }}
 
     steps:
       - name: Checkout repo with submodules
