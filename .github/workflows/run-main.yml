@@ -32,6 +32,14 @@ jobs:
           source env/bin/activate
           pip install --upgrade pip wheel setuptools
           pip install -r requirements.txt
+    
+      - name: Load secrets into environment
+        run: |
+          echo "GMAIL_EMAIL=${{ secrets.GMAIL_EMAIL }}" >> $GITHUB_ENV
+          echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}" >> $GITHUB_ENV
+          echo "CVSS_CUTOFF_SCORE=${{ secrets.CVSS_CUTOFF_SCORE }}" >> $GITHUB_ENV
+          echo "NIST_KEY=${{ secrets.NIST_KEY }}" >> $GITHUB_ENV
+          echo "BCC_LIST=${{ secrets.BCC_LIST }}" >> $GITHUB_ENV
 
       - name: Run main.py
         run: |

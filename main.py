@@ -33,7 +33,7 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
     to only return back > cvss_base_minimum) findings
     in the last 48 hours that have been published or modified.
     """
-    current_datetime = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    current_datetime = datetime.datetime.now(datetime.UTC)
     results_list = []
     for nist_data in nist_data_list:
         cve_dict = nist_data.get('cve')
