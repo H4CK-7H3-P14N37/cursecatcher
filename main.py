@@ -144,6 +144,14 @@ def get_nist_data(startIndex=0, limit=2000, results=[]) -> list:
         "startIndex": startIndex
     }
     response = requests.get(url, headers=headers, params=params, timeout=300)
+    if not response.ok:
+        response_ok = True
+    while response_ok:
+        print(f"Got Response Code: {response.status_code}... Waiting...")
+        sleep(10)
+        response = requests.get(url, headers=headers, params=params)
+        if response.ok:
+            response_ok = False
     if response.ok:
         nist_data = response.json()
         nist_vuln_data = nist_data.get('vulnerabilities')
