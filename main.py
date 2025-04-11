@@ -143,6 +143,7 @@ def get_nist_data(startIndex=0, limit=2000, results=[]) -> list:
         "resultsPerPage": limit,
         "startIndex": startIndex
     }
+    response_ok = False
     response = requests.get(url, headers=headers, params=params, timeout=300)
     if not response.ok:
         response_ok = True
