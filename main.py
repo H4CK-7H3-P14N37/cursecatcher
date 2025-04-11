@@ -201,7 +201,7 @@ def lambda_handler(event, context) -> None:
     email_body = output_cvss_results(
         html_linebreaks=True,
         cvss_base_minimum=CUTOFF_SCORE)
-    email_subject = f"Curse Catcher Report: {datetime.datetime.now().strftime('%Y-%m-%d')}"
+    email_subject = f"Curse Catcher: {datetime.datetime.now().strftime('%Y-%m-%d')}"
     mail_obj.send_mail(
         email_subject,
         email_body,
