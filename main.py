@@ -158,6 +158,8 @@ def get_nist_data(startIndex=0, limit=2000, results=[]) -> list:
         nist_vuln_data = nist_data.get('vulnerabilities')
         if nist_vuln_data:
             results.extend(nist_vuln_data)
+        if len(nist_vuln_data) == 0:
+            return results
         if len(results) < nist_data.get('totalResults'):
             sleep(1)
             get_nist_data(
