@@ -25,7 +25,7 @@ if isinstance(BCC_LIST, str):
     BCC_LIST = []
 if not CUTOFF_SCORE:
     CUTOFF_SCORE = 9.0
-
+REPORT_DIR = os.path.abspath("./reports")
 
 def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
     """
@@ -201,7 +201,10 @@ def lambda_handler(event, context) -> None:
     email_body = output_cvss_results(
         html_linebreaks=True,
         cvss_base_minimum=CUTOFF_SCORE)
-    email_subject = f"Curse Catcher: {datetime.datetime.now().strftime('%Y-%m-%d')}"
+    dt_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    with open(os.path.join(REPORT_DIR,f"{dt_str}.html"), "w") as f:
+        f.write(email_body)
+    email_subject = f"Curse Catcher: {dt_str}"
     mail_obj.send_mail(
         email_subject,
         email_body,
