@@ -48,7 +48,7 @@ jobs:
           source env/bin/activate
           python3 main.py
       
-          - name: Commit and push updated CVE data
+      - name: Commit and push updated report data
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
