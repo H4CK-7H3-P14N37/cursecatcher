@@ -206,7 +206,7 @@ def lambda_handler(event, context) -> None:
     dt_str = datetime.datetime.now().strftime('%Y-%m-%d')
     if not os.path.exists(REPORT_DIR):
         os.mkdir(REPORT_DIR)
-    with open(os.path.join(REPORT_DIR,f"{dt_str}.html"), "w") as f:
+    with open(os.path.join(REPORT_DIR,f"{dt_str}.md"), "w") as f:
         f.write(email_body)
     email_subject = f"Curse Catcher: {dt_str}"
     mail_obj.send_mail(
