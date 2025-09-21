@@ -17,7 +17,7 @@ MAIL_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD')
 CUTOFF_SCORE = float(os.environ.get('CVSS_CUTOFF_SCORE', 9.0))
 NIST_KEY = os.environ.get("NIST_KEY")
 BCC_LIST = os.environ.get('BCC_LIST', [])
-DELIMITER_COUNT = 140
+DELIMITER_COUNT = 36
 HOURS_BACK = 24
 if BCC_LIST:
     BCC_LIST = BCC_LIST.split(';')
