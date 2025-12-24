@@ -1,0 +1,62 @@
+stages:
+  - run
+
+# Ensure submodules are fetched recursively
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_DEPTH: "0"              # often safer when committing back
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_CACHE_DIR: "1"
+
+run_cursecatcher:
+  stage: run
+  image: ubuntu:latest
+
+  # If you want both scheduled and manual runs:
+  rules:
+    # Run automatically on schedules
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    # Allow manual runs from the UI
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+      allow_failure: false
+    # Prevent running on every push by default
+    - when: never
+
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends
+        python3-venv python3-dev build-essential tzdata pkg-config git ca-certificates
+    - python -m venv env
+    - source env/bin/activate
+    - pip install --upgrade pip wheel setuptools
+    - pip install -r requirements.txt
+
+  script:
+    # Export variables (GitLab CI/CD Variables should provide these)
+    - export GMAIL_EMAIL="${GMAIL_EMAIL}"
+    - export GMAIL_APP_PASSWORD="${GMAIL_APP_PASSWORD}"
+    - export CVSS_CUTOFF_SCORE="${CVSS_CUTOFF_SCORE}"
+    - export NIST_KEY="${NIST_KEY}"
+    - export BCC_LIST="${BCC_LIST}"
+
+    # Run the script
+    - source env/bin/activate
+    - python3 main.py
+
+    # Commit and push updated reports
+    - git config user.name "ltdenard"
+    - git config user.email "ltdenard@gmail.com"
+    - git add reports/*.md || true
+    - |
+      if git diff --cached --quiet; then
+        echo "No changes to commit"
+        exit 0
+      fi
+    - git commit -m "Auto-update report data"
+
+    # Authenticate push (recommended: Project Access Token with write_repository)
+    # Set CI/CD variable: GITLAB_PUSH_TOKEN (masked) and optionally GITLAB_PUSH_USER
+    - git remote set-url origin "https://${GITLAB_PUSH_USER:-oauth2}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git push origin HEAD:main
