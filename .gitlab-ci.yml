@@ -55,3 +55,5 @@ run_cursecatcher:
     # Set CI/CD variable: GITLAB_PUSH_TOKEN (masked) and optionally GITLAB_PUSH_USER
     - git remote set-url origin "https://${GITLAB_PUSH_USER:-oauth2}:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
     - git push origin HEAD:main
+  
+  resource_group: run-cursecatcher
