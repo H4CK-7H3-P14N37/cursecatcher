@@ -21,14 +21,12 @@ run_cursecatcher:
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: manual
       allow_failure: false
-    # Prevent running on every push by default
-    - when: never
 
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends
         python3-venv python3-dev build-essential tzdata pkg-config git ca-certificates
-    - python -m venv env
+    - python3 -m venv env
     - source env/bin/activate
     - pip install --upgrade pip wheel setuptools
     - pip install -r requirements.txt
