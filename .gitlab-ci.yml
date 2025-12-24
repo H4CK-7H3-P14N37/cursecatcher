@@ -12,15 +12,12 @@ run_cursecatcher:
   stage: run
   image: ubuntu:latest
 
-  # If you want both scheduled and manual runs:
   rules:
-    # Run automatically on schedules
+    # Create pipelines for scheduled runs
+    - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: on_success
-    # Allow manual runs from the UI
     - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: manual
-      allow_failure: false
+
 
   before_script:
     - apt-get update
