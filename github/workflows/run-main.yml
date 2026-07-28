@@ -12,10 +12,8 @@ jobs:
       BCC_LIST: ${{ vars.BCC_LIST }}
 
     steps:
-      - name: Checkout repo with submodules
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Set up Python
         uses: actions/setup-python@v5

@@ -1,9 +1,7 @@
 stages:
   - run
 
-# Ensure submodules are fetched recursively
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
   GIT_DEPTH: "0"              # often safer when committing back
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
   PIP_NO_CACHE_DIR: "1"
