@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: {{ palette['bg'] }};
+            margin: 0;
+            padding: 20px;
+            color: {{ palette['text'] }};
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: {{ palette['surface'] }};
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, {{ palette['header-start'] }} 0%, {{ palette['header-end'] }} 100%);
+            color: {{ palette['accent-contrast'] }};
+            padding: 30px;
+            text-align: center;
+            border-bottom: 3px solid {{ palette['accent'] }};
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-weight: 700;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .entry-card {
+            border: 3px solid {{ palette['card-border'] }};
+            border-radius: 10px;
+            margin: 0 0 24px 0;
+            overflow: hidden;
+            background-color: {{ palette['surface-alt'] }};
+        }
+        .entry-card:last-child {
+            margin-bottom: 0;
+        }
+        .entry-card .section-title {
+            margin: 0;
+            padding: 14px 16px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: {{ palette['field-color'] }};
+            background: linear-gradient(135deg, {{ palette['header-start'] }} 0%, {{ palette['header-end'] }} 100%);
+            border-bottom: 3px solid {{ palette['card-border'] }};
+        }
+        .entry-card .section-title::before {
+            content: "> ";
+            color: {{ palette['accent'] }};
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            font-size: 14px;
+        }
+        table.data-table th {
+            background-color: {{ palette['surface-alt'] }};
+            color: {{ palette['accent'] }};
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 2px solid {{ palette['accent'] }};
+        }
+        table.data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid {{ palette['border'] }};
+            color: {{ palette['text'] }};
+        }
+        table.data-table tr:last-child td {
+            border-bottom: none;
+        }
+        table.data-table tr:nth-child(even) td {
+            background-color: {{ palette['row-stripe'] }};
+        }
+        table.data-table tr:hover td {
+            background-color: {{ palette['row-hover'] }};
+        }
+        table.data-table td:first-child {
+            color: {{ palette['field-color'] }};
+            font-weight: 600;
+            width: 160px;
+            white-space: nowrap;
+        }
+        .download-section {
+            text-align: center;
+            margin: 30px 0 20px 0;
+            padding: 20px;
+            background-color: {{ palette['surface-alt'] }};
+            border-radius: 8px;
+            border: 1px solid {{ palette['border'] }};
+        }
+        .download-section p {
+            margin: 0 0 15px 0;
+            color: {{ palette['text'] }};
+        }
+        .download-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, {{ palette['accent'] }} 0%, {{ palette['accent-end'] }} 100%);
+            color: {{ palette['accent-contrast'] }};
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .signature {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid {{ palette['border'] }};
+            color: {{ palette['text'] }};
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: {{ palette['text-muted'] }};
+            font-size: 12px;
+            border-top: 1px solid {{ palette['border'] }};
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ title }}</h1>
+            {% if subtitle %}<p>{{ subtitle }}</p>{% endif %}
+        </div>
+
+        <div class="content">
+            {% for section in sections %}
+            <div class="entry-card">
+                {% if section.heading %}
+                <div class="section-title">{{ section.heading }}</div>
+                {% endif %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            {% for column in section.columns %}
+                            <th>{{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in section.rows %}
+                        <tr>
+                            {% for column in section.columns %}
+                            <td>{{ "{:,}".format(row[column]) if row[column] is number else row[column] }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+
+            {% if report_url %}
+            <div class="download-section">
+                <p>{{ download_prompt | default('View the complete results file:') }}</p>
+                <a href="{{ report_url }}"
+                   class="download-btn"
+                   target="_blank">{{ download_button_label | default('Download') }} {{ report_label | default('Report') }}</a>
+            </div>
+            {% endif %}
+
+            {% if signature_html %}
+            <div class="signature">{{ signature_html | safe }}</div>
+            {% endif %}
+        </div>
+
+        {% if footer_text %}
+        <div class="footer">
+            {{ footer_text }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

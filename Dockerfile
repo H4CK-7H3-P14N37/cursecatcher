@@ -16,8 +16,6 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy the requirements file and install dependencies
-RUN mkdir -p /app/api_classes
-COPY api_classes/mail_api.py /app/api_classes/mail_api.py
 COPY requirements.txt .
 COPY main.py .
 RUN python3 -mvenv /app/env
