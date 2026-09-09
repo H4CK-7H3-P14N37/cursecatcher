@@ -117,6 +117,8 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
                 cvss_data = metric_dict.get('cvssData')
                 if cvss_data:
                     cvss_score_list.append(cvss_data)
+        if not cvss_score_list:
+            continue
         cvss_max_base_score = max([d.get('baseScore')
                                     for d in cvss_score_list])
         if cvss_max_base_score >= cvss_base_minimum:
