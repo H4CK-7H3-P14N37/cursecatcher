@@ -122,14 +122,14 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
         cvss_max_base_score = max([d.get('baseScore')
                                     for d in cvss_score_list])
         if cvss_max_base_score >= cvss_base_minimum:
-            mod_date = datetime.datetime.strptime(
-                cve_dict.get('lastModified'),
+            pub_date = datetime.datetime.strptime(
+                cve_dict.get('published'),
                 "%Y-%m-%dT%H:%M:%S.%f"
             ).replace(
                 tzinfo=datetime.timezone.utc
             )
             if (
-                mod_date > (
+                pub_date > (
                         current_datetime -
                         datetime.timedelta(
                             hours=HOURS_BACK
@@ -142,7 +142,7 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
 
 def get_nist_data(startIndex=0, limit=2000, results=None, max_retries=10) -> list:
     """
-    gets a full list of CVEs published or modified in the date range, following
+    gets a full list of CVEs published in the date range, following
     pagination until totalResults is reached. Raises rather than returning
     a partial list if the API keeps failing.
     """
@@ -154,8 +154,8 @@ def get_nist_data(startIndex=0, limit=2000, results=None, max_retries=10) -> lis
     utcnow = datetime.datetime.now(datetime.UTC)
     utctimeago = utcnow - datetime.timedelta(hours=HOURS_BACK)
     params = {
-        "lastModStartDate": utctimeago.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3],
-        "lastModEndDate": utcnow.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3],
+        "pubStartDate": utctimeago.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3],
+        "pubEndDate": utcnow.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3],
         "resultsPerPage": limit,
         "startIndex": startIndex
     }
@@ -187,7 +187,7 @@ def build_report(findings, cvss_base_minimum, dt_str) -> tuple:
     """
     report = ReportBuilder(
         title="Curse Catcher",
-        subtitle=f"CVEs with CVSS >= {cvss_base_minimum} published or modified in the last {HOURS_BACK}h -- {dt_str}",
+        subtitle=f"CVEs with CVSS >= {cvss_base_minimum} published in the last {HOURS_BACK}h -- {dt_str}",
         palette=CURSECATCHER_PALETTE,
     )
     markdown_sections = []
