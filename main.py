@@ -38,7 +38,7 @@ MAIL_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD')
 CUTOFF_SCORE = float(os.environ.get('CVSS_CUTOFF_SCORE', 9.0))
 NIST_KEY = os.environ.get("NIST_KEY")
 BCC_LIST = os.environ.get('BCC_LIST', [])
-HOURS_BACK = 24
+HOURS_BACK = 48
 if BCC_LIST:
     BCC_LIST = BCC_LIST.split(';')
 if isinstance(BCC_LIST, str):
@@ -122,14 +122,14 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
         cvss_max_base_score = max([d.get('baseScore')
                                     for d in cvss_score_list])
         if cvss_max_base_score >= cvss_base_minimum:
-            pub_date = datetime.datetime.strptime(
-                cve_dict.get('published'),
+            mod_date = datetime.datetime.strptime(
+                cve_dict.get('lastModified'),
                 "%Y-%m-%dT%H:%M:%S.%f"
             ).replace(
                 tzinfo=datetime.timezone.utc
             )
             if (
-                pub_date > (
+                mod_date > (
                         current_datetime -
                         datetime.timedelta(
                             hours=HOURS_BACK
@@ -140,14 +140,17 @@ def parse_and_filter(nist_data_list, cvss_base_minimum) -> list:
     return findings
 
 
-def get_nist_data(startIndex=0, limit=2000, results=[]) -> list:
+def get_nist_data(startIndex=0, limit=2000, results=None, max_retries=10) -> list:
     """
-    gets a full list of CVEs that match the date range.
+    gets a full list of CVEs published or modified in the date range, following
+    pagination until totalResults is reached. Raises rather than returning
+    a partial list if the API keeps failing.
     """
     url = "https://services.nvd.nist.gov/rest/json/cves/2.0/"
     headers = {
         "apiKey": NIST_KEY
     }
+    results = [] if results is None else results
     utcnow = datetime.datetime.now(datetime.UTC)
     utctimeago = utcnow - datetime.timedelta(hours=HOURS_BACK)
     params = {
@@ -156,29 +159,24 @@ def get_nist_data(startIndex=0, limit=2000, results=[]) -> list:
         "resultsPerPage": limit,
         "startIndex": startIndex
     }
-    response_ok = False
-    response = requests.get(url, headers=headers, params=params, timeout=300)
-    if not response.ok:
-        response_ok = True
-    while response_ok:
-        print(f"Got Response Code: {response.status_code}... Waiting...")
-        sleep(10)
-        response = requests.get(url, headers=headers, params=params)
-        if response.ok:
-            response_ok = False
-    if response.ok:
+    while True:
+        for attempt in range(max_retries):
+            response = requests.get(url, headers=headers, params=params, timeout=300)
+            if response.ok:
+                break
+            print(f"Got Response Code: {response.status_code}... Waiting...")
+            sleep(10)
+        else:
+            raise RuntimeError(
+                f"NVD API failed {max_retries} times at startIndex "
+                f"{params['startIndex']}: {response.status_code}")
         nist_data = response.json()
-        nist_vuln_data = nist_data.get('vulnerabilities')
-        if nist_vuln_data:
-            results.extend(nist_vuln_data)
-        if len(nist_vuln_data) == 0:
-            return results
-        if len(results) < nist_data.get('totalResults'):
-            sleep(1)
-            get_nist_data(
-                startIndex=startIndex + 1,
-                limit=limit,
-                results=results)
+        nist_vuln_data = nist_data.get('vulnerabilities') or []
+        results.extend(nist_vuln_data)
+        params["startIndex"] += len(nist_vuln_data)
+        if not nist_vuln_data or params["startIndex"] >= nist_data.get('totalResults', 0):
+            break
+        sleep(1)
     return results
 
 
@@ -189,7 +187,7 @@ def build_report(findings, cvss_base_minimum, dt_str) -> tuple:
     """
     report = ReportBuilder(
         title="Curse Catcher",
-        subtitle=f"CVEs with CVSS >= {cvss_base_minimum} published in the last {HOURS_BACK}h -- {dt_str}",
+        subtitle=f"CVEs with CVSS >= {cvss_base_minimum} published or modified in the last {HOURS_BACK}h -- {dt_str}",
         palette=CURSECATCHER_PALETTE,
     )
     markdown_sections = []
