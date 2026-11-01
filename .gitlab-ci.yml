@@ -54,3 +54,5 @@ run_cursecatcher:
     - git push origin HEAD:main
   
   resource_group: run-cursecatcher
+  retry:
+    max: 3
