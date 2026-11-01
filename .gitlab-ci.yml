@@ -55,4 +55,4 @@ run_cursecatcher:
   
   resource_group: run-cursecatcher
   retry:
-    max: 3
+    max: 2
