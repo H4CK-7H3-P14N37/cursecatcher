@@ -5,6 +5,7 @@ variables:
   GIT_DEPTH: "0"              # often safer when committing back
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
   PIP_NO_CACHE_DIR: "1"
+  SEND_EMAIL: "false"         # set to "true" (or override via CI/CD / pipeline variable) to send the email
 
 run_cursecatcher:
   stage: run

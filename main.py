@@ -38,6 +38,7 @@ MAIL_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD')
 CUTOFF_SCORE = float(os.environ.get('CVSS_CUTOFF_SCORE', 9.0))
 NIST_KEY = os.environ.get("NIST_KEY")
 BCC_LIST = os.environ.get('BCC_LIST', [])
+SEND_EMAIL = os.environ.get('SEND_EMAIL', 'true').strip().lower() not in ('false', '0', 'no', 'off')
 HOURS_BACK = 24
 if BCC_LIST:
     BCC_LIST = BCC_LIST.split(';')
@@ -253,6 +254,10 @@ def lambda_handler(event, context) -> None:
         os.mkdir(REPORT_DIR)
     with open(os.path.join(REPORT_DIR, f"{dt_str}.md"), "w") as f:
         f.write(markdown_body)
+
+    if not SEND_EMAIL:
+        print("SEND_EMAIL is disabled; skipping email send.")
+        return
 
     email_body = report.build_html(renderer=TemplateRenderer(template_dir=TEMPLATE_DIR))
     mail_obj = Mailer(MAIL_USERNAME, MAIL_PASSWORD)
