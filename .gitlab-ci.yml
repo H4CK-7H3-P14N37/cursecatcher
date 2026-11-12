@@ -9,7 +9,7 @@ variables:
 
 run_cursecatcher:
   stage: run
-  image: ubuntu:latest
+  image: ubuntu:26.04
 
   rules:
     # Create pipelines for scheduled runs
